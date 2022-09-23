@@ -1,11 +1,14 @@
 @table = tag
-@id = 3
+@id = 1
 
 @body = {"with" : [{"article" : "article_tag"}]}
 # @body = {"title" : "écologie", "img_src" : "https://picsum.photos/id/237/200/300"}
 GET http://blog.api/{{table}}
 ###
 GET http://blog.api/{{table}}/{{id}}
+### requête ThemeDetail
+GET http://blog.api/themeDetail/{{id}}
+
 ###
 POST http://blog.api/{{table}}/{{id}}
 Content-Type: application/json
