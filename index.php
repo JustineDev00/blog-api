@@ -1,7 +1,7 @@
 <?php
 
 
-    header("Access-Control-Allow-Origin: http://localhost:3000");  //premiere securite : autorise la connexion depuis un domaine donné (ici localhost:3000)
+ header("Access-Control-Allow-Origin: http://localhost:3000");  //premiere securite : autorise la connexion depuis un domaine donné (ici localhost:3000)
 
    $_ENV["current"] = "dev";
    $config = file_get_contents("configs/".$_ENV["current"].".config.json");

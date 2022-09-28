@@ -1,7 +1,7 @@
 @table = tag
 @id = 1
 
-@body = {"with" : [{"article" : "article_tag"}]}
+@body = {"title" : "marouflage" , "is_deleted" : 0}
 # @body = {"title" : "écologie", "img_src" : "https://picsum.photos/id/237/200/300"}
 GET http://blog.api/{{table}}
 ###
@@ -10,7 +10,7 @@ GET http://blog.api/{{table}}/{{id}}
 GET http://blog.api/themeDetail/{{id}}
 
 ###
-POST http://blog.api/{{table}}/{{id}}
+POST http://blog.api/{{table}}
 Content-Type: application/json
 
 {{body}}

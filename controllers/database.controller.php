@@ -4,17 +4,23 @@
         public function __construct($params)
         {
             $id = array_shift($params);
-
-
-                
-
             $this->action = null;
 
             if(isset($id) && !ctype_digit($id)){
                 return $this;
                 }
 
+                        
+                   
+                    
+        
+        
+            
+
+
             $request_body = file_get_contents('php://input');
+            
+
             $this->body = $request_body ? json_decode($request_body, true) : null;
 
             $this->table = lcfirst(str_replace("Controller", "", get_called_class()));
@@ -68,27 +74,28 @@
             //appelle la fonction selectAll() de $dbs; dans la requête SQL envoyée, FROM $this->table sera remplacé par tag
             return $rows; //"Select all rows from table tag";
         }
-           public function getAllWith($with){
-                $rows = $this->getAll();
-                $sub_rows = [];
-                foreach($with as $table){
-                    if(is_array($table)){ //si un des éléments de l'array $with est lui-même un tableau (associatif ou indexé) 
-                        $final_table = key($table); //table dans laquelle on va chercher la donnée finale; dans l'exemple de relation MtoM entre article et tag, tag est la table finale
-                        $through_table = $table[$final_table];//table dont on va se servir pour accéder à la bonne ligne dans la table finale
-                        $dbs = new DatabaseService($through_table); //création d'une instance de dbs ciblant la table "article_tag"
-                        $through_table_rows = $dbs->selectWhere(); //on récupère toutes les lignes de la table article_tag
+       
+        public function getAllWith($with){
+            $rows = $this->getAll();
+            $sub_rows = [];
+            foreach($with as $table){
+                if(is_array($table)){ //si un des éléments de l'array $with est lui-même un tableau (associatif ou indexé) 
+                    $final_table = key($table); //table dans laquelle on va chercher la donnée finale; dans l'exemple de relation MtoM entre article et tag, tag est la table finale
+                    $through_table = $table[$final_table];//table dont on va se servir pour accéder à la bonne ligne dans la table finale
+                    $dbs = new DatabaseService($through_table); //création d'une instance de dbs ciblant la table "article_tag"
+                    $through_table_rows = $dbs->selectWhere(); //on récupère toutes les lignes de la table article_tag
 
-                        $dbs = new DatabaseService($final_table); //création d'une instance de DBS qui va cibler la table "tag"
-                        $final_table_rows = $dbs->selectAll(); //on récupère toutes les lignes de la table "tag" sauf celles qui sont soft deleted 
-                        foreach($through_table_rows as $through_table_row){
+                    $dbs = new DatabaseService($final_table); //création d'une instance de DBS qui va cibler la table "tag"
+                    $final_table_rows = $dbs->selectAll(); //on récupère toutes les lignes de la table "tag" sauf celles qui sont soft deleted 
+                    foreach($through_table_rows as $through_table_row){
                             //Pour chaque ligne de la table "article_tag"
-                            $row_to_add = array_values(array_filter($final_table_rows, function($item) use($through_table_row, $final_table){
-                                $prop = 'Id_'.$final_table;
-                                return $item->{$prop} == $through_table_row->{$prop};
+                        $row_to_add = array_values(array_filter($final_table_rows, function($item) use($through_table_row, $final_table){
+                        $prop = 'Id_'.$final_table;
+                        return $item->{$prop} == $through_table_row->{$prop};
                                 //on filtre l'ensemble des lignes dans 'tag' pour ne garder que les lignes qui ont le même Id_tag que la ligne $through_table_row
                             }));
-                            $through_table_row->$final_table = count($row_to_add) == 1 ? array_pop($row_to_add) : null ;
-                            //on vérifie que pour chaque ligne dans through_table_row il n'y a qu'une seule ligne trouvée dans final_table
+                        $through_table_row->$final_table = count($row_to_add) == 1 ? array_pop($row_to_add) : null ;
+                        //on vérifie que pour chaque ligne dans through_table_row il n'y a qu'une seule ligne trouvée dans final_table
                         }
                     $sub_rows[$final_table] = $through_table_rows;
                     //chaque ligne dans article_tag possède maintenant une propriété $final_table dans lequel on retrouve la ligne de tag ayant la même Id_tag
@@ -96,69 +103,73 @@
                     
                     }
                     //si l'élément dans l'array $with n'est pas lui-même un array
-                    $dbs = new DatabaseService($table);
-                    $table_rows = $dbs->selectAll();
-                    $sub_rows[$table] = $table_rows;
+                $dbs = new DatabaseService($table);
+                $table_rows = $dbs->selectAll();
+                $sub_rows[$table] = $table_rows;
                 }
-                foreach ($rows as $row) {
+            foreach ($rows as $row) {
                  $this->affectDataToRow($row, $sub_rows);
                 }
             return $rows;
            }     
             
-            public function getOne($id){
+        public function getOne($id){
 
-            $dbs = new DatabaseService($this->table); //idem getAll
-            $row = $dbs->selectOne($id); //appelle la fonction selectOne() de $dbs; la requête SQL, $this->table = "tag", et AND Id_$this->table = ? ==  Id_tag = $id
+        $dbs = new DatabaseService($this->table); //idem getAll
+        $row = $dbs->selectOne($id); //appelle la fonction selectOne() de $dbs; la requête SQL, $this->table = "tag", et AND Id_$this->table = ? ==  Id_tag = $id
+        return $row;
+            }
+        public function create(){
+            $dbs = new DatabaseService($this->table);
+            $row = $dbs->insertOne($this->body);
             return $row;
             }
-            public function create(){
-            return "Insert a new row in table tag";
+        public function update($id){
+        return "Update row with id = $id in table tag";
             }
-            public function update($id){
-            return "Update row with id = $id in table tag";
+        public function softDelete($id){
+        return "Delete (soft) row with id = $id in table tag";
             }
-            public function softDelete($id){
-            return "Delete (soft) row with id = $id in table tag";
-            }
-            public function hardDelete($id){
-            return "Delete (hard) row with id = $id in table tag";
+
+        public function hardDelete($id){
+        return "Delete (hard) row with id = $id in table tag";
             }
 
 
-            public function getOneWith($id, $with){
-                $row = $this->getOne($id);
-                $sub_rows = [];
-                foreach($with as $table){
-                    if(is_array($table)){
-                        $final_table = key($table);
-                        $through_table = $table[$final_table];
-                        $dbs = new DatabaseService($through_table);
-                        $through_table_rows = $dbs->selectWhere();
-                        $dbs = new DatabaseService($final_table);
-                        $final_table_rows = $dbs->selectAll();
-                        foreach($through_table_rows as $through_table_row){
-                            $row_to_add = array_values((array_filter($final_table_rows, function($item) use($through_table_row, $final_table){
-                                $prop = 'Id_'.$final_table;
-                                return $item->{$prop} == $through_table_row->{$prop};
-                            })));
-                            $through_table_row->$final_table = count($row_to_add) == 1 ? array_pop($row_to_add) : null;
+        public function getOneWith($id, $with){
+            $row = $this->getOne($id);
+            $sub_rows = [];
+            foreach($with as $table){
+                if(is_array($table)){
+                    $final_table = key($table);
+                    $through_table = $table[$final_table];
+                    $dbs = new DatabaseService($through_table);
+                    $through_table_rows = $dbs->selectWhere();
+                    $dbs = new DatabaseService($final_table);
+                    $final_table_rows = $dbs->selectAll();
+                    foreach($through_table_rows as $through_table_row){
+                        $row_to_add = array_values((array_filter($final_table_rows, function($item) use($through_table_row, $final_table)
+                        {
+                            $prop = 'Id_'.$final_table;
+                            return $item->{$prop} == $through_table_row->{$prop};
+                        })));
+                        $through_table_row->$final_table = count($row_to_add) == 1 ? array_pop($row_to_add) : null;
 
-                            //idem que getAllWith() : permet de récupérer les valeurs d'une table associative et d'associer à chaque valeur sa ligne correspondante dans la "table finale"
+                        //idem que getAllWith() : permet de récupérer les valeurs d'une table associative et d'associer à chaque valeur sa ligne correspondante dans la "table finale"
                         }
-                        $sub_rows[$final_table] = $through_table_rows;
-                        continue;
+                    $sub_rows[$final_table] = $through_table_rows;
+                    continue;
                     }
 
 
 
-                    $dbs = new DatabaseService($table);
-                    $table_rows = $dbs->selectAll();
-                    $sub_rows[$table] = $table_rows;
+                $dbs = new DatabaseService($table);
+                $table_rows = $dbs->selectAll();
+                $sub_rows[$table] = $table_rows;
                 }
                 
-                $this ->affectDataToRow($row, $sub_rows);
-                return $row;
+            $this ->affectDataToRow($row, $sub_rows);
+            return $row;
 
 
             }
