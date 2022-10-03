@@ -15,13 +15,8 @@
             
 
             $this->body = $request_body ? json_decode($request_body, true) : null;
-            if($this->body){
-                $email = '';
-                $this->body['email'] ? $email = $this->body['email'] : null;
-                $password = '';
-                $this->body['password'] ? $password = $this->body['password'] : null;
 
-            }
+            
             $this->table = lcfirst(str_replace("Controller", "", get_called_class()));
 
 
@@ -64,11 +59,7 @@
 
 
                 }
-                if($_SERVER['REQUEST_METHOD'] == "POST" && isset($email)){
-                    $this->action = $this->getOneV2($this->body);
 
-
-                }
     
         }
 
@@ -130,26 +121,7 @@
             }
 
 
-        public function getOneV2($body){
-            $dbs = new DatabaseService($this->table);
-            $row = $dbs->selectOneV2($body);
-            if(isset($row)){
-                $row->emailOK = true;
-                if($row->password == $body['password']){
-                    $row->passwordOK = true;
-                }
-                else{
-                    $row->passwordOK  = false;
-                }
-                
-            }
-            else{
-                $row = new stdClass;
-                $row->emailOK = false;
-            }
 
-            return $row;
-        }
         public function create(){
             $dbs = new DatabaseService($this->table);
             $row = $dbs->insertOne($this->body);
