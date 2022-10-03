@@ -78,32 +78,71 @@ class DatabaseService{
             }
 
         
-            public function insertOne($body = []){ //TODO insertMany
-                $columns = "";
-                $values = "";
-                if(isset($fields["Id_$this->table"])){
+        public function insertOne($body = []){ //TODO insertMany
+            $columns = "";
+            $values = "";
+            if(isset($fields["Id_$this->table"])){
                     unset($fields["Id_$this->table"]);
-                }
-                $valuesToBind = array();
-                foreach ($body as $k => $v) {
-                    $columns .= $k . ",";
-                    $values .= "?,";
-                    array_push($valuesToBind, $v);
-                }
-                $columns = trim($columns, ',');
-                $values = trim($values, ',');
-                $sql = "INSERT INTO $this->table ($columns) VALUES ($values)";
-                $resp = $this->query($sql, $valuesToBind);
-                if($resp->result && $resp->statement->rowCount() == 1){
-                    $insertedId = self::$connection->lastInsertId();
-                    $row = $this->selectOne($insertedId);
-                    return $row;
+            }
+            $valuesToBind = array();
+            foreach($body as $k => $v) {
+                $columns .= $k . ",";
+                $values .= "?,";
+                array_push($valuesToBind, $v);
+            }
+            $columns = trim($columns, ',');
+            $values = trim($values, ',');
+            $sql = "INSERT INTO $this->table ($columns) VALUES ($values)";
+            $resp = $this->query($sql, $valuesToBind);
+            if($resp->result && $resp->statement->rowCount() == 1){
+                $insertedId = self::$connection->lastInsertId();
+                $row = $this->selectOne($insertedId);
+                return $row;
                 }
                 return false;
             }
-         
 
-    }
+        public function updateOne($body = [], $id){
+            $columns = "";
+
+            if(isset($body["Id_$this->table"])){
+                unset($body["Id_$this->table"]);  
+            }
+            // if(isset($body["is_deleted"])){
+            //     //on ne supprime plus la propriété is_deleted car dans le cas d'un soft delete elle est utilisée pour modifier la ligne en BDD
+            //     unset($body['is_deleted']);
+            // }
+            $valuesToBind = array();
+            foreach($body as $col => $v) {
+                $columns .=$col.'=?,';
+                array_push($valuesToBind, $v);
+            }
+            array_push($valuesToBind, 0, $id);
+            $columns = trim($columns, ',' );
+            $sql = "UPDATE $this->table SET $columns WHERE is_deleted = ? AND Id_$this->table = ?";
+            $resp = $this->query($sql, $valuesToBind);
+            if($resp->result && $resp->statement->rowCount() == 1){
+                $row = $this->selectOne($id);
+                return $row;
+                }
+                return false;
+            }
+
+        public function deleteOne($body){
+            $id = $body["Id_$this->table"];
+            $where = "Id_$this->table=?";
+            $sql = "DELETE FROM $this->table WHERE $where";
+            $resp = $this->query($sql, [$id]);
+            if($resp-> result && $resp->statement->rowCount() <= 1){
+                $row = $this->selectOne($id);
+                return !isset($row);
+            }
+            return false;
+        }
+            }
+            
+
+        
                 
             
 

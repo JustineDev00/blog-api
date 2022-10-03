@@ -33,6 +33,7 @@
             //$this->table peut etre passe en parametres dans la création d'une instance de DatabaseService
 
             if($_SERVER['REQUEST_METHOD'] == "GET" && !isset($id)){
+
                 $this->action = $this->getAll();  //si pas d'ID reçu : getAll()
                 }
                 if($_SERVER['REQUEST_METHOD'] == "GET" && isset($id)){
@@ -125,14 +126,24 @@
             return $row;
             }
         public function update($id){
-        return "Update row with id = $id in table tag";
+            $dbs = new DatabaseService($this->table);
+            $row = $dbs->updateOne($this->body, $id);
+            return $row;
+            // return "Update row with id = $id in table tag";
             }
         public function softDelete($id){
-        return "Delete (soft) row with id = $id in table tag";
+            $dbs = new DatabaseService($this->table);
+            $row = $dbs->updateOne(['is_deleted' => 1], $id);
+            if(isset($row) && $row == false){
+            return false;
+            }
+            return !isset($row);
             }
 
         public function hardDelete($id){
-        return "Delete (hard) row with id = $id in table tag";
+        $dbs = new DatabaseService($this->table);
+        $row = $dbs->deleteOne(["Id_$this->table" => $id]);
+        return $row;
             }
 
 
@@ -153,7 +164,9 @@
                             $prop = 'Id_'.$final_table;
                             return $item->{$prop} == $through_table_row->{$prop};
                         })));
-                        $through_table_row->$final_table = count($row_to_add) == 1 ? array_pop($row_to_add) : null;
+                       if(count($row_to_add) == 1){
+                        $through_table_row->$final_table = array_pop($row_to_add);
+                       }
 
                         //idem que getAllWith() : permet de récupérer les valeurs d'une table associative et d'associer à chaque valeur sa ligne correspondante dans la "table finale"
                         }

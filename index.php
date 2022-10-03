@@ -3,6 +3,14 @@
 
  header("Access-Control-Allow-Origin: http://localhost:3000");  //premiere securite : autorise la connexion depuis un domaine donné (ici localhost:3000)
 
+
+ header("Access-Control-Allow-Methods: *");
+if($_SERVER['REQUEST_METHOD'] == "OPTIONS"){
+header('HTTP/1.0 200 OK');
+die;
+}
+
+
    $_ENV["current"] = "dev";
    $config = file_get_contents("configs/".$_ENV["current"].".config.json");
    $_ENV["config"] = json_decode($config);
