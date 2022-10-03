@@ -69,6 +69,15 @@ class DatabaseService{
             return $row; //retourne l'objet récupéré
                 }
 
+        public function selectOneV2($body){
+            $sql = "SELECT * FROM $this->table WHERE is_deleted = ? AND email = ?";
+            $resp = $this->query($sql, [0, $body['email']]);
+            $rows = $resp->statement->fetchAll(PDO::FETCH_CLASS); //recupère toutes les lignes où chaque ligne est au format objet
+            $row = $resp->result && count($rows) == 1 ? $rows[0] : null; //si la réponse a abouti et si rows ne contient qu'une classe, $row correspond au premier (et unique) objet de $rows
+            return $row; //retourne l'objet récupéré
+            
+        }
+
         public function selectWhere($where = null){
             $sql = "SELECT * FROM $this->table". (isset($where) ?? "WHERE $where") . ";";
          //sélectionne tout dans $this->table (param obtenu lors de la construction de l'instance de DBS) et SI isset($where) est true, alors on ajoute "WHERE $where ;" à la requête

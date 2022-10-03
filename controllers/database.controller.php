@@ -10,13 +10,21 @@
                 return $this;
                 }
 
-
+            
             $request_body = file_get_contents('php://input');
             
 
             $this->body = $request_body ? json_decode($request_body, true) : null;
+            if($this->body){
+                $email = '';
+                $this->body['email'] ? $email = $this->body['email'] : null;
+                $password = '';
+                $this->body['password'] ? $password = $this->body['password'] : null;
 
+            }
             $this->table = lcfirst(str_replace("Controller", "", get_called_class()));
+
+
 
             //str_replace cherche dans get_called_class() (le nom de la classe appelant cette fonction, les instances de DBC elle-même ou les instances de ses classes-filles) l'expression "Controller", par ""; puis la premiere lettre est mise en minuscule;
 
@@ -32,7 +40,7 @@
                 if($_SERVER['REQUEST_METHOD'] == "GET" && isset($id)){
                 $this->action = $this->getOne($id); //si un ID reçu : getOne()
                 }
-                if($_SERVER['REQUEST_METHOD'] == "POST" &&!isset($id)){
+                if($_SERVER['REQUEST_METHOD'] == "POST" &&!isset($id) && !isset($email)){
                 $this->action = $this->create();
                 }
                 if($_SERVER['REQUEST_METHOD'] == "PUT" && isset($id)){
@@ -56,11 +64,19 @@
 
 
                 }
+                if($_SERVER['REQUEST_METHOD'] == "POST" && isset($email)){
+                    $this->action = $this->getOneV2($this->body);
+
+
+                }
     
         }
 
         public abstract function affectDataToRow(&$row, $sub_rows);
         //cette fonction est transmise aux classes filles cependant c'est dans ces classes-filles que le paramètre &$row sera défini
+        
+
+
         public function getAll(){
             $dbs = new DatabaseService($this->table);
             //genère une instance de classe DatabaseService où $this = tag
@@ -108,11 +124,32 @@
            }     
             
         public function getOne($id){
-
         $dbs = new DatabaseService($this->table); //idem getAll
         $row = $dbs->selectOne($id); //appelle la fonction selectOne() de $dbs; la requête SQL, $this->table = "tag", et AND Id_$this->table = ? ==  Id_tag = $id
         return $row;
             }
+
+
+        public function getOneV2($body){
+            $dbs = new DatabaseService($this->table);
+            $row = $dbs->selectOneV2($body);
+            if(isset($row)){
+                $row->emailOK = true;
+                if($row->password == $body['password']){
+                    $row->passwordOK = true;
+                }
+                else{
+                    $row->passwordOK  = false;
+                }
+                
+            }
+            else{
+                $row = new stdClass;
+                $row->emailOK = false;
+            }
+
+            return $row;
+        }
         public function create(){
             $dbs = new DatabaseService($this->table);
             $row = $dbs->insertOne($this->body);

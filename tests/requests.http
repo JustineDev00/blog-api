@@ -1,7 +1,7 @@
-@table = tag
+@table = account
 @id = 11
 
-@body = {"title" : "marouflage" , "is_deleted" : 0}
+@body = {"email" : "patrick.b@levallois-perret.fr" , "password" : "dksuidks56", "is_deleted" : 0}
 # @body = {"title" : "écologie", "img_src" : "https://picsum.photos/id/237/200/300"}
 GET http://blog.api/{{table}}
 ###
