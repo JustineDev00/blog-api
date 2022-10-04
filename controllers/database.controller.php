@@ -35,7 +35,7 @@
                 if($_SERVER['REQUEST_METHOD'] == "GET" && isset($id)){
                 $this->action = $this->getOne($id); //si un ID reçu : getOne()
                 }
-                if($_SERVER['REQUEST_METHOD'] == "POST" &&!isset($id) && !isset($email)){
+                if($_SERVER['REQUEST_METHOD'] == "POST" &&!isset($id)){
                 $this->action = $this->create();
                 }
                 if($_SERVER['REQUEST_METHOD'] == "PUT" && isset($id)){
