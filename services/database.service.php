@@ -70,10 +70,9 @@ class DatabaseService{
                 }
 
 
-        public function selectWhere($where = null){
-            $sql = "SELECT * FROM $this->table". (isset($where) ?? "WHERE $where") . ";";
-         //sélectionne tout dans $this->table (param obtenu lors de la construction de l'instance de DBS) et SI isset($where) est true, alors on ajoute "WHERE $where ;" à la requête
-            $resp = $this->query($sql, [0]);
+        public function selectWhere($where = "1", $params = []){
+            $sql = "SELECT * FROM $this->table WHERE $where;";
+            $resp = $this->query($sql, $params);
             $rows = $resp->statement->fetchAll(PDO::FETCH_CLASS);
             return $rows;
             }
