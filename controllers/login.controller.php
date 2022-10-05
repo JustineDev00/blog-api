@@ -26,7 +26,10 @@ class LoginController{
         $where = "is_deleted = ? AND email = ?";
         $rows = $dbs->selectWhere($where, [0, $email]);
         $row = $rows ? $rows[0] : null;
-        if($row == null || $row->password != $this->body['password']){
+        $prefix = $_ENV['config']->hash->prefix;
+
+
+        if($row == null || !password_verify($this->body['password'], $prefix . $row->password)){
             return["result" => false];
 
         }
