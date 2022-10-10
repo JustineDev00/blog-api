@@ -1,0 +1,13 @@
+{
+    "name": "justi/webtoken",
+    "type": "project",
+    "require": {
+        "firebase/php-jwt": "^6.3"
+    },
+    "authors": [
+        {
+            "name": "JustineDev00",
+            "email": "dev.justine.verin@gmail.com"
+        }
+    ]
+}

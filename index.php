@@ -1,10 +1,10 @@
 <?php
 
 
- header("Access-Control-Allow-Origin: http://localhost:3000");  //premiere securite : autorise la connexion depuis un domaine donné (ici localhost:3000)
-
-
- header("Access-Control-Allow-Methods: *");
+header("Access-Control-Allow-Origin: http://localhost:3000");  //premiere securite : autorise la connexion depuis un domaine donné (ici localhost:3000)
+header("Access-Control-Allow-Headers: Authorization");
+header("Access-Control-Allow-Credentials: true");
+header("Access-Control-Allow-Methods: *");
 if($_SERVER['REQUEST_METHOD'] == "OPTIONS"){
 header('HTTP/1.0 200 OK');
 die;
@@ -22,6 +22,7 @@ die;
    
     require_once 'services/database.service.php';//import de la classe DatabaseService
     require_once 'controllers/database.controller.php';
+    require_once ('vendor/autoload.php');  //nécessaire à l'utilisation de 
      // TEST DE QUERY()
     // $dbs = new DatabaseService("test"); //initialisation d'une instance de classe DatabaseService, permettant d'exécuter la fonction query()
     // $query_resp = $dbs->query("SELECT table_name FROM information_schema.tables WHERE table_schema = ?", ['mcd-blog-db']); //cette requête permet d'obtenir des informations sur la BDD, ici table_name from information_schema.tables nous donne les noms des tables d'une BDD; table_schema correspond au nom de la BDD (passée en 2e paramètre de query())
