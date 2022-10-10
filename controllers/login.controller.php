@@ -64,24 +64,25 @@ class LoginController{
                 //payload : informations transmises par le JWT, les noms de clés suivent les noms standards des déclarations des JWT, liste ici : https://www.iana.org/assignments/jwt/jwt.xhtml
             $token = JWT::encode($requestData, $secretKey, 'HS512');
             //encodage des informations fournies par le JWT, HS512 est l'algorithme d'encodage
-            return["result" => true, "role" => $appUser->Id_role, "token" => $token];
+            return["result" => true, "role" => $appUser->Id_role,"id" =>$appUser->Id_appUser, "token" => $token];
                     //Le contenu du token encodé est transmis dans la réponse de l'API au site web
 
             }
             else{
                 return["result" => false];
             }
-
         }
         
-
     }
 
     public function check(){
         $headers = apache_request_headers();
-        $token = $headers["Authorization"];
+        if(isset($headers['Authorization'])){
+            $token = $headers["Authorization"];
+        }
+       
         $secretKey = $_ENV['config']->jwt->secret;
-        if(!empty($token)){
+        if(isset($token) && !empty($token)){
             try{
                 $payload = JWT::decode($token, new Key($secretKey, 'HS512'));
             }
