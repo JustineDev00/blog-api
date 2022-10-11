@@ -50,7 +50,7 @@ class LoginController{
                 $secretKey = $_ENV['config']->jwt->secret;
                 $issuedAt = time();
                 $expireAt = $issuedAt + 60*60*24; //expiration du token à date de création + 24 heures
-                 $serverName = "blog.api";
+                $serverName = "blog-api";
                 $userRole = $appUser->Id_role; 
                 $userId = $appUser->Id_appUser;
                 $requestData = [
@@ -76,10 +76,9 @@ class LoginController{
     }
 
     public function check(){
-        $headers = apache_request_headers();
-        if(isset($headers['Authorization'])){
-            $token = $headers["Authorization"];
-        }
+      if(isset($_COOKIE['blog'])){
+        $token = $_COOKIE['blog'];
+      }
        
         $secretKey = $_ENV['config']->jwt->secret;
         if(isset($token) && !empty($token)){

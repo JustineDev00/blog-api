@@ -2,7 +2,7 @@
 
 
 header("Access-Control-Allow-Origin: http://localhost:3000");  //premiere securite : autorise la connexion depuis un domaine donné (ici localhost:3000)
-header("Access-Control-Allow-Headers: Authorization");
+// header("Access-Control-Allow-Headers: Authorization"); //optionnel si l'on récupère le cookie par $_COOKIE
 header("Access-Control-Allow-Credentials: true");
 header("Access-Control-Allow-Methods: *");
 if($_SERVER['REQUEST_METHOD'] == "OPTIONS"){
@@ -42,6 +42,9 @@ die;
     $route = trim($_SERVER["REQUEST_URI"], '/'); //enlève le slash au début et à la fin de la route
     $route = filter_var($route, FILTER_SANITIZE_URL); // 	Remove all characters except letters, digits and $-_.+!*'(),{}|\\^~[]`<>#%";/?:@&=. 
     $route = explode('/', $route); //transforme route en array
+    if($_SERVER['HTTP_HOST'] == 'localhost'){
+        array_shift($route);
+    }
     $controllerName = array_shift($route); //modifie route pour retirer le premier elt, et assigne à $controllerName l'élément retiré
     
     //initialisation de l'API (création automatique des classes Controller en fonction des tables de la BDD interrogée)
@@ -66,6 +69,9 @@ die;
     }
     require_once 'middlewares/auth.middleware.php';
     $req = $_SERVER['REQUEST_METHOD'] . "/" . trim($_SERVER["REQUEST_URI"], '/');
+    if($_SERVER['HTTP_HOST'] == 'localhost'){
+        $req = str_replace('/blog.api', '', $req);
+    }
     $am = new AuthMiddleware($req);
     $am->verify();
     

@@ -22,8 +22,11 @@ class AuthMiddleware{
     public function verify(){
         if(isset($this->condition)){  //this->condition = la condition qui doit être remplie pour accéder à la requête demandée;
             $headers = apache_request_headers();
-            if(isset($headers["Authorization"])){
-                $token = $headers["Authorization"];  //recuperation du token renvoyé par la page web
+            // if(isset($headers["Authorization"])){
+            //     $token = $headers["Authorization"];  //recuperation du token renvoyé par la page web
+            // }
+            if(isset($_COOKIE['blog'])){
+                $token = $_COOKIE['blog'];
             }
             $secretKey = $_ENV['config']->jwt->secret;
             if(isset($token) && !empty($token)){
