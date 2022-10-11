@@ -61,10 +61,13 @@ die;
             }
         }
         echo 'api initialized';
+        header('HTTP/1.0 200 OK');
+        die;
     }
-    
-    
-    
+    require_once 'middlewares/auth.middleware.php';
+    $req = $_SERVER['REQUEST_METHOD'] . "/" . trim($_SERVER["REQUEST_URI"], '/');
+    $am = new AuthMiddleware($req);
+    $am->verify();
     
     
     $controllerFilePath = "controllers/$controllerName.controller.php"; //chemin vers les fichiers du dossier controller (attention à la syntaxe!)
