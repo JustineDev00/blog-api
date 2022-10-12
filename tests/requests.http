@@ -8,6 +8,8 @@ GET http://blog.api/{{table}}
 GET http://blog.api/{{table}}/{{id}}
 ### requête ThemeDetail
 GET http://blog.api/themeDetail/{{id}}
+### requête envoi de mail à mon adresse gmail
+GET http://blog.api/test
 
 ###
 POST http://blog.api/{{table}}
