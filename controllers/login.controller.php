@@ -26,6 +26,9 @@ class LoginController{
         if($_SERVER['REQUEST_METHOD'] == "POST" && $this->method == "register"){
             $this->action = $this->register();
         }
+        if($_SERVER['REQUEST_METHOD'] == "POST" && $this->method == "validate"){
+            $this->action = $this->validate();
+        }
         }
     
   
@@ -169,7 +172,10 @@ class LoginController{
 
 
     }
-     
+    public function validate(){
+        $token = $this->body['token'];
+        return $token;
+    } 
 
     }
 
