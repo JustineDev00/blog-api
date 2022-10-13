@@ -24,8 +24,8 @@
             "port" : 587,
             "auth" : true,
             "secure" : "tls",
-            "user" : "notmyaddress@nope.com",
-            "pass" : "nope.mp3"
+            "user" : "dev.justine.verin@gmail.com",
+            "pass" : "qujalcyvjwlnkklz"
 
         }
     }

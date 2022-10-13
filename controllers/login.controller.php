@@ -1,6 +1,9 @@
 <?php 
+require_once './services/mailer.service.php';
+
 use \Firebase\JWT\JWT;
 use \Firebase\JWT\Key;
+
 
 class LoginController{
 
@@ -122,7 +125,39 @@ class LoginController{
                 return ["message" => "pseudo already taken"];
             }
             else{
-                return ["message" => "pseudo and email available for account creation"];
+                $secretKey = $_ENV['config']->jwt->secret;
+                $issuedAt = time();
+                $expireAt = $issuedAt + 60*60;
+                $serverName = "blog-api";
+                $requestData = [
+                    'iat' => $issuedAt,
+                    'iss' => $serverName,
+                    'nbf' => $issuedAt,
+                    'exp' =>$expireAt,
+                    'mail' => $email,
+                    'pseudo' => $pseudo,
+
+
+                ];
+                $token = JWT::encode($requestData, $secretKey, 'HS512');
+                $href = "http://localhost:3000/account/validate/$token";
+                $mailParams = [
+                    "fromAddress" => ["register@monblog.com", "inscription monblog.com"],
+                    "destAddresses" => [$email],
+                    "replyAddress" => ['info@monblog.com', "information monblog.com"],
+                    "subject" => "Inscription à monblog.com",
+                    "body" => "cliquer ci-dessous pour valider la création du compte
+                    <br>
+                    <a href='$href'>Valider</a>",
+                    "altBody" => "Veuillez copier/coller l'adresse suivante dans votre navigateur: $href"
+                ];
+                $ms = new MailerService();
+                $sent = $ms->send($mailParams);
+                return ['result' => $sent, "message" => $sent? "Vérifiez votre boîte mail et confirmer votre inscription sur monblog.com" : "Une erreur est survenue, merci de recommencer l'inscription"];
+
+
+            
+
             }
 
 
