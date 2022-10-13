@@ -24,8 +24,8 @@
             "port" : 587,
             "auth" : true,
             "secure" : "tls",
-            "user" : "dev.justine.verin@gmail.com",
-            "pass" : "qujalcyvjwlnkklz"
+            "user" : "redacted",
+            "pass" : "redacted"
 
         }
     }
