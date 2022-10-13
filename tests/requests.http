@@ -1,7 +1,7 @@
 @table = login
 @id = 11
 
-@body = {"email" : "maka.albarn@deathcity.jp" , "password" : "PMLJnqkd67", "is_deleted" : 0}
+@body = {"pseudo" : "SoulEvans", "email" : "soul.evans@dwma.nv"}
 # @body = {"title" : "écologie", "img_src" : "https://picsum.photos/id/237/200/300"}
 GET http://blog.api/{{table}}
 ###
@@ -11,6 +11,11 @@ GET http://blog.api/themeDetail/{{id}}
 ### requête envoi de mail à mon adresse gmail
 GET http://blog.api/test
 
+###requête register
+POST http://blog.api/login/register
+Content-Type: application/json
+
+{{body}}
 ###
 POST http://blog.api/{{table}}
 Content-Type: application/json

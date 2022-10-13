@@ -20,6 +20,9 @@ class LoginController{
         if($this->method == "check"){
             $this->action = $this->check();
         }
+        if($_SERVER['REQUEST_METHOD'] == "POST" && $this->method == "register"){
+            $this->action = $this->register();
+        }
         }
     
   
@@ -98,7 +101,10 @@ class LoginController{
         }
         return ["result" => false];
     }
+    public function register(){
+        return $this->body;
 
+    }
      
 
     }
