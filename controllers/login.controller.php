@@ -102,7 +102,36 @@ class LoginController{
         return ["result" => false];
     }
     public function register(){
-        return $this->body;
+        $pseudo = $this->body["pseudo"];
+        $email = filter_var($this->body["email"], FILTER_SANITIZE_EMAIL);
+        if(!filter_var($email, FILTER_VALIDATE_EMAIL)){
+            return ["message" => "invalid email address"];
+        }
+        $dbs = new DatabaseService($this->table);
+        $where = "is_deleted = ? AND email = ?";
+        $rows = $dbs->selectWhere($where, [0, $email]);
+        if(count($rows) > 0){
+            return ["message" => "email address already in use"];
+
+        }
+        else{
+            $dbs = new DatabaseService("appuser");
+            $where = "is_deleted = ? AND pseudo = ?";
+            $rows = $dbs->selectWhere($where, [0, $pseudo]);
+            if(count($rows) > 0){
+                return ["message" => "pseudo already taken"];
+            }
+            else{
+                return ["message" => "pseudo and email available for account creation"];
+            }
+
+
+
+            
+        }
+           
+        
+
 
     }
      
