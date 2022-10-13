@@ -98,7 +98,7 @@ class LoginController{
                 $payload = null;
             }
             if(isset($payload) &&
-                $payload->iss === "blog.api" &&
+                $payload->iss === "blog-api" &&
                 $payload->nbf < time() &&
                 $payload->exp > time())
                 {
@@ -174,8 +174,24 @@ class LoginController{
     }
     public function validate(){
         $token = $this->body['token'];
-        return $token;
-    } 
+        $secretKey = $_ENV['config']->jwt->secret;
+        if(isset($token) && !empty($token)){
+            try{
+                $payload = JWT::decode($token, new Key($secretKey, 'HS512'));
+            }
+            catch(Exception $e){
+                $payload = null;
+            }
+            if(isset($payload) &&
+                $payload->iss === "blog-api" &&
+                $payload->nbf < time() &&
+                $payload->exp > time())
+                {
+                    return ["result" => true, "pseudo" => $payload->pseudo, "mail" => $payload->mail];
+                }
+            }
+           return ["result" => false];  
+        }
 
     }
 
