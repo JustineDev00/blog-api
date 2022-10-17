@@ -29,6 +29,10 @@ class LoginController{
         if($_SERVER['REQUEST_METHOD'] == "POST" && $this->method == "validate"){
             $this->action = $this->validate();
         }
+        if($_SERVER['REQUEST_METHOD'] == "POST" && $this->method == "create"){
+            $this->action = $this->create();
+        }
+
         }
     
   
@@ -168,8 +172,6 @@ class LoginController{
             
         }
            
-        
-
 
     }
     public function validate(){
@@ -193,6 +195,55 @@ class LoginController{
            return ["result" => false];  
         }
 
+    public function create(){
+        //TODO : crypter les mots de passes (mis de côté pour le moment, besoin de demander des questions à Laurent)
+       
+        //TO DO : vérifier que les deux mots de passe sont identiques (faire la validation côté React également)
+        $pseudo = $this->body['pseudo'];
+        $mail = $this->body['mail'];
+
+        //si les deux mots de passe sont identiques:
+        if($this->body['password'] == $this->body['password-confirm']){
+            //si OK : cryptage du mot de passe
+            $prefix = $_ENV['config']->hash->prefix;
+            $password = str_replace($prefix, '',password_hash($this->body["password"], PASSWORD_ARGON2ID, [
+                'memory_cost' => 1024,
+                'time_cost' => 2,
+                'threads' => 2
+            ]));
+            $dbs = new DatabaseService('appuser');
+            //TO DO : créer une nouvelle ligne appUser (lignes : pseudo, is_deleted, Id_role)
+            $body = ['pseudo' => $pseudo, 'is_deleted' => 0, Id_role => 2];
+            //DONE : récupérer la ligne créée (retournée par DBS)
+            $appUserRow = $dbs->insertOne($body);
+            if(isset($appUserRow)){
+                $dbs = new DatabaseService('account');
+                $body = ['email' => $mail, 'password' => $password, 'is_deleted' => 0, 'Id_appUser' => $appUserRow->Id_appUser];
+                 //done: créer une nouvelle ligne account(lignes : mail, mot de passe crypté, Id_appUser)
+                $accountRow = $dbs->insertOne($body);
+                if(isset($accountRow)){
+                    //done : renvoyer une réponse à blog-admin 
+                    return ["result" => true];
+                }
+                else{
+                    return ["result" => false];
+                }
+                
+            }
+            else{
+                return ["result" => false];
+            }
+        }else{
+            return ["result" => false];
+        }
+        
+
+        
+       
+        //done : renvoyer une réponse à blog-admin 
+        
+        
+    }
     }
 
 
