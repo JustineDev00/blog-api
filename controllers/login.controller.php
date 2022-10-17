@@ -32,7 +32,15 @@ class LoginController{
         if($_SERVER['REQUEST_METHOD'] == "POST" && $this->method == "create"){
             $this->action = $this->create();
         }
-
+        if($_SERVER["REQUEST_METHOD"] == 'POST' && $this->method == 'forgottenPassword'){
+            $this->action = $this->checkForPasswordChange();
+        }
+        if($_SERVER["REQUEST_METHOD"] == 'POST' && $this->method == 'validatePasswordChange'){
+            $this->action = $this->validateForPwdChange();
+        }
+        if($_SERVER["REQUEST_METHOD"] == 'POST' && $this->method == 'changePassword'){
+            $this->action = $this->changePassword();
+        }
         }
     
   
@@ -162,17 +170,9 @@ class LoginController{
                 $sent = $ms->send($mailParams);
                 return ['result' => $sent, "message" => $sent? "Vérifiez votre boîte mail et confirmer votre inscription sur monblog.com" : "Une erreur est survenue, merci de recommencer l'inscription"];
 
-
-            
-
-            }
-
-
-
-            
+            }  
         }
            
-
     }
     public function validate(){
         $token = $this->body['token'];
@@ -234,16 +234,95 @@ class LoginController{
             return ["result" => false];
         }
         
-
-        
-       
-        //done : renvoyer une réponse à blog-admin 
-        
-        
-    }
     }
 
 
+    public function checkForPasswordChange(){
+        $email = $this->body['email'];
+        //DONE : vérifier si $mail existe dans la BDD
+        $dbs = new DatabaseService('account');
+        $where = "is_deleted = ? AND email = ?";
+        $rows = $dbs->selectWhere($where, [0, $email]);
+        if(count($rows) === 1){
+             //DONE : créer token content l'Id de l'account
+            $row = $rows[0];
+            $id = $row->Id_account;
+            $secretKey = $_ENV['config']->jwt->secret;
+            $issuedAt = time();
+            $expireAt = $issuedAt + 60*60;
+            $serverName = "blog-api";
+            $requestData = [
+                'iat' => $issuedAt,
+                'iss' => $serverName,
+                'nbf' => $issuedAt,
+                'exp' =>$expireAt,
+                'id' => $id,
+            ];
+            $token = JWT::encode($requestData, $secretKey, 'HS512');
+            //TO DO : si oui, envoyer un email avec token dans l'URL autorisant le changement de mot de passe
+            $ms = new MailerService();
+            $href = "http://localhost:3000/changePassword/$token";
+            $mailParams = [
+                "fromAddress" => ["register@monblog.com", "inscription monblog.com"],
+                "destAddresses" => [$email],
+                "replyAddress" => ['info@monblog.com', "information monblog.com"],
+                "subject" => "Réinitialisation de mot de passe de votre compte monblog.com",
+                "body" => "cliquer ci-dessous pour réinitialiser votre mot de passe. Si vous n'êtes pas à l'origine de cette demande, ignorez ce message.
+                <br>
+                <a href='$href'>Valider</a>",
+                "altBody" => "Veuillez copier/coller l'adresse suivante dans votre navigateur pour réinitialiser votre mot de passe : $href. Si vous n'êtes pas à l'origine de cette demande, ignorez ce message."
+            ];
+            $sent = $ms->send($mailParams);
+            return ['result' => $sent, "message" => $sent? "Vérifiez votre boîte mail et suivez les instructions pour réinitialiser votre mot de passe" : "Une erreur est survenue, merci de recommencer l'opération"];
+           
+        }
+        else{
+            return ["result" => false, "message" => "Adresse email inconnue"];
+        }
+    }
+
+    public function validateForPwdChange(){
+        $token = $this->body['token'];
+        $secretKey = $_ENV['config']->jwt->secret;
+        if(isset($token) && !empty($token)){
+            try{
+                $payload = JWT::decode($token, new Key($secretKey, 'HS512'));
+            }
+            catch(Exception $e){
+                $payload = null;
+            }
+            if(isset($payload) &&
+                $payload->iss === "blog-api" &&
+                $payload->nbf < time() &&
+                $payload->exp > time())
+                {
+                    return ["result" => true, "id" => $payload->id];
+                }
+            }
+           return ["result" => false];  
+    }
+
+    public function changePassword(){
+        $id = $this->body['id'];
+        if($this->body['password'] == $this->body['passwordConfirm']){
+            //si OK : cryptage du mot de passe
+            $prefix = $_ENV['config']->hash->prefix;
+            $password = str_replace($prefix, '',password_hash($this->body["password"], PASSWORD_ARGON2ID, [
+                'memory_cost' => 1024,
+                'time_cost' => 2,
+                'threads' => 2
+            ]));
+        $dbs = new DatabaseService('account');
+        $row = $dbs->updateOne(['password' => $password], $id);
+        if(isset($row)){
+            return ["result" => true, "message" => "Votre mot de passe a bien été modifié."];
+        }
+        return ["result" => false, "message" => "Une erreur est survenue, merci de recommencer l'opération"];
+
+    }
+}
+
+}
  
    
 
