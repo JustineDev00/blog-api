@@ -196,14 +196,11 @@ class LoginController{
         }
 
     public function create(){
-        //TODO : crypter les mots de passes (mis de côté pour le moment, besoin de demander des questions à Laurent)
-       
-        //TO DO : vérifier que les deux mots de passe sont identiques (faire la validation côté React également)
         $pseudo = $this->body['pseudo'];
         $mail = $this->body['mail'];
 
         //si les deux mots de passe sont identiques:
-        if($this->body['password'] == $this->body['password-confirm']){
+        if($this->body['password'] == $this->body['passwordConfirm']){
             //si OK : cryptage du mot de passe
             $prefix = $_ENV['config']->hash->prefix;
             $password = str_replace($prefix, '',password_hash($this->body["password"], PASSWORD_ARGON2ID, [
@@ -212,8 +209,8 @@ class LoginController{
                 'threads' => 2
             ]));
             $dbs = new DatabaseService('appuser');
-            //TO DO : créer une nouvelle ligne appUser (lignes : pseudo, is_deleted, Id_role)
-            $body = ['pseudo' => $pseudo, 'is_deleted' => 0, Id_role => 2];
+            //DONE: créer une nouvelle ligne appUser (lignes : pseudo, is_deleted, Id_role)
+            $body = ['pseudo' => $pseudo, 'is_deleted' => 0, 'Id_role' => 2];
             //DONE : récupérer la ligne créée (retournée par DBS)
             $appUserRow = $dbs->insertOne($body);
             if(isset($appUserRow)){
